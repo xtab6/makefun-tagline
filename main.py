@@ -32,9 +32,17 @@ def main() -> int:
         print("tagline must be a single line", file=sys.stderr)
         return 1
     out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
+    os.makedirs(out_dir, exist_ok=True)
     path = os.path.join(out_dir, "entry.txt")
     with open(path, "w", encoding="utf-8", newline="") as f:
         f.write(text)
+    # Read back and verify byte-for-byte: a partial or mangled write must
+    # fail loudly here instead of shipping a bad entry to the judge.
+    with open(path, "r", encoding="utf-8", newline="") as f:
+        written = f.read()
+    if written != text:
+        print("entry.txt read-back mismatch", file=sys.stderr)
+        return 1
     return 0
 
 
